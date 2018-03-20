@@ -10,7 +10,6 @@ import bloop.logging.Logger
 import sbt.internal.inc.{FreshCompilerCache, Locate, LoggedReporter, ZincUtil}
 
 case class CompileInputs(
-
     scalaInstance: ScalaInstance,
     compilerCache: CompilerCache,
     sourceDirectories: Array[AbsolutePath],
@@ -19,6 +18,7 @@ case class CompileInputs(
     baseDirectory: AbsolutePath,
     scalacOptions: Array[String],
     javacOptions: Array[String],
+    classpathOptions: ClasspathOptions,
     previousResult: PreviousResult,
     reporter: Reporter,
     logger: Logger
@@ -45,8 +45,7 @@ object Compiler {
         .flatMap(src => Paths.getAll(src, "glob:**.{scala,java}"))
         .distinct
       val classesDir = inputs.classesDir.toFile
-      // TODO(jvican): Figure out why `inputs.scalaInstance.allJars` is required here.
-      val classpath = inputs.classpath.map(_.toFile) ++ inputs.scalaInstance.allJars
+      val classpath = inputs.classpath.map(_.toFile)
 
       CompileOptions
         .create()
@@ -55,6 +54,7 @@ object Compiler {
         .withClasspath(classpath)
         .withScalacOptions(inputs.scalacOptions)
         .withJavacOptions(inputs.javacOptions)
+        .withClasspathOptions(inputs.classpathOptions)
     }
 
     def getSetup(compileInputs: CompileInputs): Setup = {
